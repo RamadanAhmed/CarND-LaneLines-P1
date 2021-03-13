@@ -29,42 +29,35 @@ The goals / steps of this project are the following:
 3. Compute edges using canny edge detector on image from step 2
 4. Compute region of interest that contain the lane on image from step 3
 5. Apply hough lines to detect lines in image from step 4
-6. Overlay detected lines from step 5 on the original image.
+6. Split lines to be left lines and right lines according to the their location from position from 1/2 the width
+7. Compute coefficient (slope and intercept) for left lines and right lines
+8. smooth coefficient by using prior frames(10) coefficient to reduce lane shakiness
+9. extrapolate the lines using region of interest vertices
+10. if slope computing is not possible use previous frames
+11. create images with extrapolated lines   
+1. Overlay extrapolated lines from step 5 on the original image.
 
 - In order to draw a single line on the left and right lanes, I modified the draw_lines() function by 
-1. Initialize Ymin = Ymax = height of image
-2. Initialize right_lane_m, left_lane_m, right_lane_b, left_lane_b with empty lists
-3. for each detected line: 
-    1. Compute slope & intercept
-    2. Update Ymin to be the minimum between Ymin, y of point 1, y of point 2
-    3. if slope is negtive 
-        1. current line in the right lane 
-        2. append slope, intercept to right_lane_m and right_lane_b respectively 
-    4. else 
-        1. current line in the left lane 
-        2. append slope, intercept to left_lane_m and left_lane_b respectively 
-4. Compute mean of right_lane_m, left_lane_m, right_lane_b, left_lane_b
-5. for each lane :
-    1. Compute upper_corner for using (y-b/m) by substitute y = Ymin, b = mean_b, m = mean_m
-    2. Compute lower_corner for using (y-b/m) by substitute y = Ymax, b = mean_b, m = mean_m
-    3. Draw line between upper and lower corner
+1. Split lines to be left lines and right lines according to the their location from position from 1/2 the width
+2. Compute coefficient (slope and intercept) for left lines and right lines
+3. smooth coefficient by using prior frames(10) coefficient
+4. extrapolate the lines using region of interest vertices
+5. if slope computing is not possible use previous frames
+6. create images with extrapolated lines   
+7. Overlay extrapolated lines from step 5 on the original image.
 
 
 ### 2. Identify potential shortcomings with your current pipeline
 
 
-One potential shortcoming would be what would happen when the hood of the car is appearing in the image causing lines to apear on the image
-and it will be hard to draw lines since most of the lines are in lower part of the image.
+The algorithm works well in most scenarios but fails in the following conditions (If you apply the algorithm to the optional video you'll see the algorithm failing when it encounters such conditions):
 
-Another shortcoming could be when there are shadows on the road causing false postive lines, also it make it hard to detect lines covered by the shadow.
-
-Another shortcoming will be parameter tuning for all image/video resolution
-
+- Shadow on roads
+- Curved Lanes
+- Reduced visibility in case of unfavourable weather conditions
 
 ### 3. Suggest possible improvements to your pipeline
 
-A possible improvement would be to try to compensated for the hood of the car by updating the parameters for region of interest to correctly detect lanes
-
-Another potential improvement could be to tune the parameter of the hough lines and battle test the solution on different datasets
-
-Another potential improvement could be to use standard resolution for all videos or resize videos that doesn't agree with our standard before processing
+- Only accept lines that have slops within acceptable range and reject other lines.
+- You'll get to see a glimpse of this later but you can try playing around with different Color Spaces that might be able to handle shadows on road.
+- You could try implementing a Spline Model for complex lane detection as described here
